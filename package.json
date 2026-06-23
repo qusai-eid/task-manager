@@ -1,0 +1,10 @@
+{
+  "name": "classic-snake",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.cjs",
+    "test": "node tests/run-tests.js"
+  }
+}

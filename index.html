@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Classic Snake</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="panel">
+        <div class="header">
+          <div>
+            <h1>Snake QUSAI</h1>
+            <p>Classic grid movement, food, score, and restart.</p>
+          </div>
+          <div class="scoreboard">
+            <span>Score</span>
+            <strong id="score">0</strong>
+          </div>
+        </div>
+
+        <div class="status-row">
+          <p id="status">Press any arrow key or WASD to start.</p>
+          <button id="restart-button" type="button">Restart</button>
+        </div>
+
+        <div
+          id="board"
+          class="board"
+          role="grid"
+          aria-label="Snake game board"
+        ></div>
+
+        <div class="controls" aria-label="Touch controls">
+          <button class="control up" data-direction="up" type="button">Up</button>
+          <button class="control left" data-direction="left" type="button">Left</button>
+          <button class="control down" data-direction="down" type="button">Down</button>
+          <button class="control right" data-direction="right" type="button">Right</button>
+        </div>
+
+        <ul class="notes">
+          <li>Keyboard: arrow keys or WASD</li>
+          <li>Pause: space bar</li>
+          <li>Restart: Enter after game over or the restart button</li>
+        </ul>
+      </section>
+    </main>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

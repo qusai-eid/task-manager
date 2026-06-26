@@ -6,9 +6,19 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
+      '/api': { target: 'http://localhost:5000', changeOrigin: true },
+    },
+  },
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor':  ['react', 'react-dom', 'react-router-dom'],
+          'charts':        ['recharts'],
+          'ui':            ['lucide-react'],
+          'utils':         ['axios', 'date-fns', 'react-hot-toast'],
+        },
       },
     },
   },

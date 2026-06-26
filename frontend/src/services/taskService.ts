@@ -1,13 +1,9 @@
 import api from './api';
-import { Task, TaskFilters, Analytics } from '../types';
+import { Task, TaskFilters, Analytics, KanbanBoard } from '../types';
 
 export async function fetchTasks(filters: TaskFilters = {}): Promise<Task[]> {
   const params = new URLSearchParams();
-  if (filters.status) params.set('status', filters.status);
-  if (filters.priority) params.set('priority', filters.priority);
-  if (filters.search) params.set('search', filters.search);
-  if (filters.sort) params.set('sort', filters.sort);
-  if (filters.order) params.set('order', filters.order);
+  Object.entries(filters).forEach(([k, v]) => { if (v !== '' && v !== undefined) params.set(k, String(v)); });
   const { data } = await api.get(`/tasks?${params}`);
   return data.tasks;
 }
@@ -22,13 +18,18 @@ export async function createTask(task: Partial<Task>): Promise<Task> {
   return data.task;
 }
 
-export async function updateTask(id: number, task: Partial<Task>): Promise<Task> {
+export async function updateTask(id: number, task: Partial<Task> & { status?: string }): Promise<Task> {
   const { data } = await api.put(`/tasks/${id}`, task);
   return data.task;
 }
 
 export async function deleteTask(id: number): Promise<void> {
   await api.delete(`/tasks/${id}`);
+}
+
+export async function fetchKanban(): Promise<KanbanBoard> {
+  const { data } = await api.get('/tasks/kanban');
+  return data.board;
 }
 
 export async function fetchAnalytics(): Promise<Analytics> {

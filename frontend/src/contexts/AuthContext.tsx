@@ -1,10 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { User } from '../types';
+import { User, UserRole } from '../types';
 import { loginUser, registerUser } from '../services/authService';
 
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
+  role: UserRole | null;
+  isAdmin: boolean;
+  isManager: boolean;
+  canManage: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -21,11 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const stored = localStorage.getItem('user');
     const token = localStorage.getItem('token');
     if (stored && token) {
-      try {
-        setUser(JSON.parse(stored));
-      } catch {
-        localStorage.clear();
-      }
+      try { setUser(JSON.parse(stored)); } catch { localStorage.clear(); }
     }
     setLoading(false);
   }, []);
@@ -55,8 +55,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('user', JSON.stringify(updated));
   }, []);
 
+  const role = user?.role ?? null;
+  const isAdmin = role === 'admin';
+  const isManager = role === 'manager';
+  const canManage = isAdmin || isManager;
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, role, isAdmin, isManager, canManage, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

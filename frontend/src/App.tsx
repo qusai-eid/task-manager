@@ -7,16 +7,32 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import TasksPage from './pages/TasksPage';
+import KanbanPage from './pages/KanbanPage';
+import MembersPage from './pages/MembersPage';
 import ProfilePage from './pages/ProfilePage';
+import ActivityPage from './pages/ActivityPage';
+import TeamKPIsPage from './pages/TeamKPIsPage';
 
-function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-  if (loading) return (
+function Spinner() {
+  return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
       <span className="w-10 h-10 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
     </div>
   );
+}
+
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return <Spinner />;
   return user ? <>{children}</> : <Navigate to="/login" replace />;
+}
+
+function ManagerRoute({ children }: { children: React.ReactNode }) {
+  const { user, canManage, loading } = useAuth();
+  if (loading) return <Spinner />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (!canManage) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
@@ -33,9 +49,8 @@ export default function App() {
           <Toaster
             position="top-right"
             toastOptions={{
-              className: 'dark:bg-gray-800 dark:text-white',
               duration: 3000,
-              style: { borderRadius: '10px' },
+              style: { borderRadius: '12px', fontSize: '14px' },
             }}
           />
           <Routes>
@@ -45,7 +60,11 @@ export default function App() {
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="tasks" element={<TasksPage />} />
+              <Route path="kanban" element={<KanbanPage />} />
               <Route path="profile" element={<ProfilePage />} />
+              <Route path="members" element={<ManagerRoute><MembersPage /></ManagerRoute>} />
+              <Route path="activity" element={<ManagerRoute><ActivityPage /></ManagerRoute>} />
+              <Route path="team-kpis" element={<ManagerRoute><TeamKPIsPage /></ManagerRoute>} />
             </Route>
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>

@@ -1,6 +1,5 @@
 import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
+import express, { Request, Response, NextFunction } from 'express';
 import authRoutes from './routes/auth';
 import taskRoutes from './routes/tasks';
 import userRoutes from './routes/users';
@@ -12,15 +11,26 @@ import aiRoutes from './routes/ai';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Allow all origins — access is controlled by JWT authentication
-const corsOptions = { origin: true, credentials: true };
-app.options('*', cors(corsOptions)); // handle preflight for every route
-app.use(cors(corsOptions));
+// ── Manual CORS middleware ─────────────────────────────────────────
+// Added manually instead of the cors() package so Railway cannot
+// silently swallow the headers during a cached/partial redeploy.
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const origin = req.headers.origin ?? '*';
+  res.setHeader('Access-Control-Allow-Origin',      origin);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods',     'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers',     'Content-Type,Authorization');
+  res.setHeader('Access-Control-Max-Age',           '86400'); // preflight cache 24h
+  if (req.method === 'OPTIONS') { res.sendStatus(204); return; }
+  next();
+});
+
 app.use(express.json({ limit: '10mb' }));
 
+// ── Health check ───────────────────────────────────────────────────
 app.get('/health', (_req, res) => res.json({ status: 'ok', version: '2.0.0' }));
 
-// Primary routes — with /api prefix (used when frontend has correct baseURL)
+// ── Routes with /api prefix ────────────────────────────────────────
 app.use('/api/auth',          authRoutes);
 app.use('/api/tasks',         taskRoutes);
 app.use('/api/users',         userRoutes);
@@ -29,7 +39,7 @@ app.use('/api/activity',      activityRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/ai',            aiRoutes);
 
-// Alias routes — without /api prefix (resilience for misconfigured VITE_API_URL)
+// ── Alias routes without /api prefix (resilience) ─────────────────
 app.use('/auth',          authRoutes);
 app.use('/tasks',         taskRoutes);
 app.use('/users',         userRoutes);
@@ -41,7 +51,7 @@ app.use('/ai',            aiRoutes);
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 
 app.listen(PORT, () => {
-  console.log(`TaskFlow API v2.0 running on http://localhost:${PORT}`);
+  console.log(`PrecastFlow API running on port ${PORT}`);
 });
 
 export default app;

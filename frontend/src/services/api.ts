@@ -1,29 +1,14 @@
 import axios from 'axios';
 
-// The live Railway backend base (no /api suffix here — added below)
-const RAILWAY_BASE = 'https://task-manager-production-097d.up.railway.app';
-
-/**
- * Resolves the API base URL for axios.
- * Rules (in priority order):
- *  1. VITE_API_URL env var — normalized to always end with /api
- *  2. Railway URL + /api  — used automatically in production builds
- *  3. /api               — used in local dev (Vite proxy forwards to localhost:5000)
- */
-function resolveBaseURL(): string {
-  const envUrl = import.meta.env.VITE_API_URL;
-
-  if (envUrl) {
-    // Strip trailing slashes, then append /api if the caller omitted it
-    const trimmed = envUrl.replace(/\/+$/, '');
-    return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
-  }
-
-  return import.meta.env.PROD ? `${RAILWAY_BASE}/api` : '/api';
-}
+// Production backend on Railway.
+// In local dev the Vite proxy forwards /api → localhost:5000.
+const BASE =
+  import.meta.env.PROD
+    ? 'https://task-manager-production-097d.up.railway.app/api'
+    : '/api';
 
 const api = axios.create({
-  baseURL: resolveBaseURL(),
+  baseURL: BASE,
   headers: { 'Content-Type': 'application/json' },
 });
 

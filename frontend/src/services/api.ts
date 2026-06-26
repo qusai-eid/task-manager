@@ -1,9 +1,18 @@
 import axios from 'axios';
 
-// Dev → Vite proxy forwards /api → localhost:5000
-// Production → VITE_API_URL must point to the live backend (e.g. https://xxx.railway.app/api)
+// The live Railway backend URL
+const RAILWAY_API = 'https://task-manager-production-097d.up.railway.app/api';
+
+// Resolution order:
+//   1. VITE_API_URL env var (set in Vercel dashboard if you ever switch backends)
+//   2. Railway URL in production builds (import.meta.env.PROD = true)
+//   3. /api in local dev (Vite proxy forwards it to localhost:5000)
+const baseURL =
+  import.meta.env.VITE_API_URL ??
+  (import.meta.env.PROD ? RAILWAY_API : '/api');
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? '/api',
+  baseURL,
   headers: { 'Content-Type': 'application/json' },
 });
 

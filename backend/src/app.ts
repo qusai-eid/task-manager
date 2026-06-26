@@ -31,13 +31,24 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 
 app.get('/health', (_req, res) => res.json({ status: 'ok', version: '2.0.0' }));
-app.use('/api/auth', authRoutes);
-app.use('/api/tasks', taskRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/members', memberRoutes);
-app.use('/api/activity', activityRoutes);
+
+// Primary routes — with /api prefix (used when frontend has correct baseURL)
+app.use('/api/auth',          authRoutes);
+app.use('/api/tasks',         taskRoutes);
+app.use('/api/users',         userRoutes);
+app.use('/api/members',       memberRoutes);
+app.use('/api/activity',      activityRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api/ai', aiRoutes);
+app.use('/api/ai',            aiRoutes);
+
+// Alias routes — without /api prefix (resilience for misconfigured VITE_API_URL)
+app.use('/auth',          authRoutes);
+app.use('/tasks',         taskRoutes);
+app.use('/users',         userRoutes);
+app.use('/members',       memberRoutes);
+app.use('/activity',      activityRoutes);
+app.use('/notifications', notificationRoutes);
+app.use('/ai',            aiRoutes);
 
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 

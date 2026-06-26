@@ -1,6 +1,12 @@
 node_modules/
 dist/
 .env
-.env.*
+.env.local
+.env.development
+.env.production
+.env.staging
 *.local
 *.tsbuildinfo
+
+# Keep example files — they contain no secrets
+!.env.example

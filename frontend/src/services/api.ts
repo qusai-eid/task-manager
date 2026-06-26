@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+// Dev → Vite proxy forwards /api → localhost:5000
+// Production → VITE_API_URL must point to the live backend (e.g. https://xxx.railway.app/api)
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL ?? '/api',
   headers: { 'Content-Type': 'application/json' },
 });
 

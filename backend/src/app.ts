@@ -12,8 +12,20 @@ import aiRoutes from './routes/ai';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Always allow localhost in dev; in production also allow FRONTEND_URL
+// FRONTEND_URL can be comma-separated for multiple domains
+const DEV_ORIGINS = ['http://localhost:5173', 'http://localhost:5174'];
+const PROD_ORIGINS = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',').map(o => o.trim())
+  : [];
+const ALLOWED_ORIGINS = [...DEV_ORIGINS, ...PROD_ORIGINS];
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? process.env.FRONTEND_URL : 'http://localhost:5173',
+  origin: (origin, cb) => {
+    // Allow server-to-server requests (no origin) and whitelisted origins
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) cb(null, true);
+    else cb(new Error(`CORS: origin ${origin} not allowed`));
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));

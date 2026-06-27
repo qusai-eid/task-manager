@@ -3,7 +3,8 @@ import path from 'path';
 import fs from 'fs';
 import bcrypt from 'bcryptjs';
 
-const DB_PATH = path.join(__dirname, '../../data/tasks.db');
+// Allow overriding the DB location via env var; default to ../../data/tasks.db
+const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, '../../data/tasks.db');
 let db: DatabaseSync;
 
 export function getDatabase(): DatabaseSync {
@@ -11,10 +12,23 @@ export function getDatabase(): DatabaseSync {
     const dir = path.dirname(DB_PATH);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     db = new DatabaseSync(DB_PATH);
-    db.exec('PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;');
+    // NOTE: no WAL mode — WAL's shared-memory files (.db-shm/.db-wal) can fail
+    // on container overlay filesystems (Railway) and crash the native binding.
+    db.exec('PRAGMA foreign_keys=ON;');
     runMigrations();
   }
   return db;
+}
+
+/**
+ * Eagerly opens + seeds the database at startup so any failure is visible in
+ * the deploy logs (instead of crashing on the first request) and so the
+ * demo accounts exist before the first login attempt.
+ */
+export function initializeDatabase(): void {
+  const database = getDatabase();
+  const count = (database.prepare('SELECT COUNT(*) AS n FROM users').get() as { n: number }).n;
+  console.log(`[db] ready at ${DB_PATH} — ${count} users seeded`);
 }
 
 function tableExists(name: string): boolean {

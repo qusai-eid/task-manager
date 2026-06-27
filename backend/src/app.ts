@@ -65,8 +65,13 @@ app.use('/ai',            aiRoutes);
 // ── 404 fallback ───────────────────────────────────────────────────
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 
-app.listen(PORT, () => {
-  console.log(`PrecastFlow API  node ${process.version}  port ${PORT}`);
+// Surface any startup crash in the Railway logs instead of dying silently
+process.on('uncaughtException',  (e) => console.error('[uncaughtException]', e));
+process.on('unhandledRejection', (e) => console.error('[unhandledRejection]', e));
+
+// Bind to 0.0.0.0 — Railway routes external traffic only to this interface
+app.listen(Number(PORT), '0.0.0.0', () => {
+  console.log(`PrecastFlow API listening on 0.0.0.0:${PORT}  (node ${process.version})`);
 });
 
 export default app;
